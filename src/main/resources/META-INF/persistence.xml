@@ -20,6 +20,10 @@
         -->
         <class>entities.Employee</class>
         <class>entities.Department</class>
+        <class>entities.Salaries</class>
+        <class>entities.Titles</class>
+        <class>entities.DeptEmployee</class>
+        <class>entities.DeptManager</class>
 
         <properties>
             <property name="jakarta.persistence.jdbc.driver" 

@@ -25,7 +25,9 @@ public class Main {
         DepartmentRepository departmentRepository = new DepartmentRepository(em);
         Employee employee = null;
         employee = employeeRepository.findById(10001L);
-        System.out.println("Employee Found: " + employee);
+//        System.out.println("Employee Found: " + employee);
+//        System.out.println("Salaries: " + employee.getSalaries());
+//        System.out.println("Titles Found: " + employee.getTitles());
 
         List<Department> departments = departmentRepository.findAllDepartments();
         for (Department department : departments) {

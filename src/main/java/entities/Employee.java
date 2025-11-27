@@ -1,12 +1,16 @@
 package entities;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.Id;
-import jakarta.persistence.Table;
+import jakarta.persistence.*;
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 
 import java.time.LocalDate;
+import java.util.List;
 
+@Data
+@NoArgsConstructor
+@AllArgsConstructor
 @Entity
 @Table(name = "employees")
 public class Employee {
@@ -30,59 +34,10 @@ public class Employee {
     @Column(name = "hire_date")
     private LocalDate  hireDate;
 
-    public Employee() {}
+    @OneToMany(mappedBy = "employee", fetch = FetchType.LAZY)
+    private List<Salaries> salaries;
 
-    public Long getEmpNo() {
-        return empNo;
-    }
+    @OneToMany(mappedBy = "employee", fetch = FetchType.LAZY)
+    private List<Titles> titles;
 
-    public void setEmpNo(Long empNo) {
-        this.empNo = empNo;
-    }
-
-    public String getFirstName() {
-        return firstName;
-    }
-
-    public void setFirstName(String firstName) {
-        this.firstName = firstName;
-    }
-
-    public String getLastName() {
-        return lastName;
-    }
-
-    public void setLastName(String lastName) {
-        this.lastName = lastName;
-    }
-
-    public LocalDate getBirthDate() {
-        return birthDate;
-    }
-
-    public void setBirthDate(LocalDate birthDate) {
-        this.birthDate = birthDate;
-    }
-
-    public String getGender() {
-        return gender;
-    }
-
-    public void setGender(String gender) {
-        this.gender = gender;
-    }
-
-    public LocalDate getHireDate() {
-        return hireDate;
-    }
-
-    public void setHireDate(LocalDate hireDate) {
-        this.hireDate = hireDate;
-    }
-
-    @Override
-    public String toString() {
-        return String.format("Id: %s, First Name: %s, Last Name: %s,  Birth Date: %s, Gender: %s, Hire Date: %s",
-                this.empNo, this.firstName, this.lastName, this.birthDate, this.gender, this.hireDate );
-    }
 }
