@@ -1,12 +1,17 @@
 package entities;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.Id;
-import jakarta.persistence.Table;
+import jakarta.persistence.*;
+import lombok.*;
+
+import java.util.List;
 
 @Entity
 @Table(name = "departments")
+@Getter
+@Setter
+@ToString
+@NoArgsConstructor
+@AllArgsConstructor
 public class Department {
 
     @Id
@@ -16,31 +21,13 @@ public class Department {
     @Column(name = "dept_name")
     private String deptName;
 
-    public Department() {}
+    // one-to-many relationship between departments and dept_emp table
+    @OneToMany(mappedBy = "deptEmpDepartmentObj")
+    @ToString.Exclude
+    private List<DeptEmployee> deptEmployees;
 
-    public Department(String deptNo, String deptName) {
-        this.deptNo = deptNo;
-        this.deptName = deptName;
-    }
-
-    public String getDeptNo() {
-        return deptNo;
-    }
-
-    public void setDeptNo(String deptNo) {
-        this.deptNo = deptNo;
-    }
-
-    public String getDeptName() {
-        return deptName;
-    }
-
-    public void setDeptName(String deptName) {
-        this.deptName = deptName;
-    }
-
-    @Override
-    public String toString() {
-        return String.format("deptNo:%s, deptName:%s", this.deptNo, this.deptName);
-    }
+    // one-to-many relationship between departments and dept_manager table
+    @OneToMany(mappedBy = "deptManDepartmentObj")
+    @ToString.Exclude
+    private List<DeptManager> deptManagers;
 }

@@ -29,8 +29,8 @@
 - Full employee record:
 
         {
-            dept_no: , 
-            dept_name: ,
+            emp_no: ,
+            birth_date: ,
             first_name: , 
             last_name: , 
             gender: ,

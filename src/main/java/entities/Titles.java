@@ -14,11 +14,11 @@ import java.time.LocalDate;
 @ToString(exclude = "employee")
 public class Titles {
 
-    @Column(name = "to_date")
-    private LocalDate toDate;
-
     @EmbeddedId
     private TitlesId titlesId;
+
+    @Column(name = "to_date")
+    private LocalDate toDate;
 
     @ManyToOne
     @MapsId("empNo")

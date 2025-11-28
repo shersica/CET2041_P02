@@ -15,11 +15,11 @@ import java.time.LocalDate;
 @ToString(exclude = "employee")
 public class Salaries {
 
-    @Column(name = "salary")
-    private BigDecimal salary;
-
     @EmbeddedId
     private SalariesId salariesId;
+
+    @Column(name = "salary")
+    private BigDecimal salary;
 
     @Column(name = "to_date")
     private LocalDate toDate;
