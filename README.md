@@ -26,7 +26,9 @@
 ![](/src/main/resources/employees-schema.png)
 
 ### Notes:
-- Full employee record:
+- Endpoint 1 type: GET
+- Endpoint 2 type: GET; no DTO required, 
+<br>Full employee record below:
 
         {
             emp_no: ,
@@ -54,6 +56,8 @@
                         },
         }
 
+- Endpoint 3 type: GET; create query, require 1 DTO
+- Endpoint 4 type: POST
 - Employee promotion is not tier-based; simply update title (and manager status if the person is promoted to a manager), dept_name, salary, from_ & to_date. 
 <br>**Note**: 
   - Must support addition of title(s).

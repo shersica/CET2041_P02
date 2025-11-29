@@ -1,5 +1,6 @@
 package entities;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -12,6 +13,10 @@ import java.util.List;
 @ToString
 @NoArgsConstructor
 @AllArgsConstructor
+@NamedQueries({
+        @NamedQuery(name = "Department.findAllDepartments",
+        query = "SELECT e FROM Department e")
+})
 public class Department {
 
     @Id
@@ -23,11 +28,12 @@ public class Department {
 
     // one-to-many relationship between departments and dept_emp table
     @OneToMany(mappedBy = "deptEmpDepartmentObj")
-    @ToString.Exclude
+    @JsonIgnore
     private List<DeptEmployee> deptEmployees;
 
     // one-to-many relationship between departments and dept_manager table
     @OneToMany(mappedBy = "deptManDepartmentObj")
-    @ToString.Exclude
+    @JsonIgnore
     private List<DeptManager> deptManagers;
+
 }

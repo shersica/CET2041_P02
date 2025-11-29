@@ -1,5 +1,6 @@
 package entities;
 
+import jakarta.persistence.Column;
 import jakarta.persistence.Embeddable;
 import lombok.*;
 
@@ -11,6 +12,10 @@ import java.io.Serializable;
 @NoArgsConstructor
 @AllArgsConstructor
 public class DeptManagerId implements Serializable {
-    private Long emp_no;
-    private String dept_no;
+
+    @Column(name = "emp_no")
+    private Long empNo;
+
+    @Column(name = "dept_no")
+    private String deptNo;
 }
