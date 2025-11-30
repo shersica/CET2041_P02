@@ -15,7 +15,8 @@ import java.util.List;
 @AllArgsConstructor
 @NamedQueries({
         @NamedQuery(name = "Department.findAllDepartments",
-        query = "SELECT e FROM Department e")
+        query = "SELECT e FROM Department e " +
+                "ORDER BY e.deptNo")
 })
 public class Department {
 

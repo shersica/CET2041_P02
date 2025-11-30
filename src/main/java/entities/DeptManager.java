@@ -13,9 +13,15 @@ import java.time.LocalDate;
 @Table(name = "dept_manager")
 @Getter
 @Setter
-@ToString
+@ToString(exclude = {"deptManDepartmentObj", "deptManEmployeeObj"})
 @NoArgsConstructor
-@AllArgsConstructor
+//@AllArgsConstructor
+@NamedQueries({
+        @NamedQuery(name = "DeptManager.findLatestDeptManagerRecord",
+                query = "SELECT dm FROM DeptManager dm " +
+                        "WHERE dm.deptManagerId.deptNo = :deptNo " +
+                        "ORDER BY dm.fromDate DESC "),
+})
 public class DeptManager {
 
     @EmbeddedId

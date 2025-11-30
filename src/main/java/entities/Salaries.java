@@ -15,6 +15,12 @@ import java.time.LocalDate;
 //@AllArgsConstructor
 @ToString(exclude = "employee")
 @JsonPropertyOrder({"salary", "fromDate", "toDate"})
+@NamedQueries({
+        @NamedQuery(name = "Salaries.findLatestEmployeeSalary",
+                query = "SELECT s FROM Salaries s " +
+                        "WHERE s.employee.empNo = :empNo " +
+                        "ORDER BY s.salariesId.fromDate DESC")
+})
 public class Salaries {
 
     @EmbeddedId

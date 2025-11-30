@@ -1,7 +1,6 @@
 package entities;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 import lombok.*;
@@ -17,13 +16,12 @@ import java.util.List;
 @NoArgsConstructor
 @AllArgsConstructor
 @NamedQueries({
-        @NamedQuery(name = "Employee.findFullEmployeeRecord",
-                query = "SELECT DISTINCT e FROM Employee e " +
-                        "JOIN FETCH e.deptEmployees de " +
-                        "JOIN FETCH e.deptManagers dm " +
-                        "JOIN FETCH e.salaries " +
-                        "JOIN FETCH e.titles " +
-                        "WHERE e.empNo = :empNo")
+        @NamedQuery(name = "Employee.findEmployeeInDepartment",
+                query = "SELECT NEW entities.EmployeeDTO(e.empNo, e.firstName, e.lastName, e.birthDate) " +
+                        "FROM Employee e JOIN DeptEmployee de ON e.empNo = de.deptEmpEmployeeObj.empNo " +
+                        "WHERE de.deptEmpDepartmentObj.deptNo = :deptNo " +
+                        "ORDER BY e.empNo"),
+
 })
 public class Employee {
 

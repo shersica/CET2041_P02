@@ -9,6 +9,7 @@ import java.io.Serializable;
 @Embeddable
 @Getter
 @Setter
+@ToString
 @NoArgsConstructor
 @AllArgsConstructor
 public class DeptEmployeeId implements Serializable {

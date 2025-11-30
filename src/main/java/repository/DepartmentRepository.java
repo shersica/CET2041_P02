@@ -13,9 +13,10 @@ public class DepartmentRepository {
 //        this.em = em;
 //    }
 
+    // LOGIC FOR ENDPOINT 1
     public List<Department> findAllDepartments() {
         em = JPAUtil.getEntityManager();
-        return em.createNamedQuery("Department.findAllDepartments", Department.class).getResultList();
-
+        return em.createNamedQuery("Department.findAllDepartments", Department.class)
+                .getResultList();
     }
 }

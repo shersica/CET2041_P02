@@ -10,9 +10,18 @@ import java.time.LocalDate;
 @Table(name = "dept_emp")
 @Getter
 @Setter
-@ToString
+@ToString(exclude = {"deptEmpEmployeeObj", "deptEmpDepartmentObj"})
 @NoArgsConstructor
 //@AllArgsConstructor
+@NamedQueries({
+        @NamedQuery(name = "DeptEmployee.findAllEmployeeInDepartment",
+                query = "SELECT de FROM DeptEmployee de " +
+                        "WHERE de = :deptNo"),
+        @NamedQuery(name = "DeptEmployee.findLatestDeptEmployeeRecord",
+        query = "SELECT de FROM DeptEmployee de " +
+                "WHERE de.deptEmployeeId.empNo = :empNo " +
+                "ORDER BY de.fromDate DESC ")
+})
 @JsonPropertyOrder({"deptName", "deptNo", "fromDate", "toDate"})
 public class DeptEmployee {
 
