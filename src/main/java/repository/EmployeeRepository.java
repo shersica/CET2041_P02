@@ -54,16 +54,16 @@ public class EmployeeRepository {
     // LOGIC FOR ENDPOINT 4
     public void promoteEmployee(List<PromotionRequestDTO> promotionRequestDTOS) {
 
-        em = JPAUtil.getEntityManager();
+//        em = JPAUtil.getEntityManager();
 
-        em.getTransaction().begin();
+//        em.getTransaction().begin();
         try {
             for (PromotionRequestDTO promotionRequestDTO : promotionRequestDTOS) {
                 LocalDate today = LocalDate.now();
                 LocalDate endDate = today.minusDays(1);
 
                 Employee employee = findEmpRecordById(promotionRequestDTO.getEmpNo());
-                String currentDeptNo = findLatestDeptEmployee(promotionRequestDTO.getEmpNo()).getDeptNo();
+                String currentDeptNo = findLatestDeptEmployee(em, promotionRequestDTO.getEmpNo()).getDeptNo();
                 String targetDeptNo = promotionRequestDTO.getNewDeptNo() != null
                         ? promotionRequestDTO.getNewDeptNo()
                         : currentDeptNo;
@@ -91,35 +91,38 @@ public class EmployeeRepository {
             }
 
             System.out.println("success 5");
-            em.getTransaction().commit();
+//            em.getTransaction().commit();
             System.out.println("success 6");
         } catch (Exception e) {
-            if (em.getTransaction().isActive()) {
-                em.getTransaction().rollback();
-            }
+//            if (em.getTransaction().isActive()) {
+//                em.getTransaction().rollback();
+//            }
 
             throw new RuntimeException(e.getMessage(), e);
         } finally {
-            if (em.isOpen()) {
-                em.close();
-            }
+//            if (em.isOpen()) {
+//                em.close();
+//            }
         }
     }
 
     // HELPER METHOD
     private void updateAndInsertNewDeptManager(Employee employee, String deptNo, LocalDate today, LocalDate endDate) {
 
-        DeptManager deptManager = findLatestDeptManager(deptNo);
-        System.out.println("old: " + deptManager);
+        EntityManager helperEm = JPAUtil.getEntityManager();
+        System.out.println("4");
+        helperEm.getTransaction().begin();
+        try {
+        DeptManager deptManager = findLatestDeptManager(helperEm, deptNo);
 
         if (deptManager != null) {
             deptManager.setToDate(endDate);
+//            helperEm.merge(deptManager);
         }
-        System.out.println("new: " + deptManager);
 
-        try {
+//        try {
             DeptManager newDeptManagerObj = new DeptManager();
-            Department targetDept = em.find(Department.class, deptNo);
+            Department targetDept = helperEm.find(Department.class, deptNo);
 
             newDeptManagerObj.setDeptManagerId(new DeptManagerId(employee.getEmpNo(), deptNo));
             newDeptManagerObj.setDeptManDepartmentObj(targetDept);
@@ -127,28 +130,38 @@ public class EmployeeRepository {
             newDeptManagerObj.setFromDate(today);
             newDeptManagerObj.setToDate(LocalDate.of(9999, 1, 1));
 
-            System.out.println(newDeptManagerObj);
-            em.persist(newDeptManagerObj);
+            helperEm.persist(newDeptManagerObj);
+            helperEm.getTransaction().commit();
         } catch (Exception e) {
+            if (helperEm.getTransaction().isActive()) {
+                helperEm.getTransaction().rollback();
+            }
             String errorMessage = "Failed to save DeptManager record: " + e.getMessage();
 
             throw new RuntimeException(errorMessage, e);
+        } finally {
+            if (helperEm.isOpen()) {
+                helperEm.close();
+            }
         }
     }
 
     private void updateAndInsertNewDeptEmp(Employee employee, String newDeptNo, LocalDate today, LocalDate endDate) {
 
-        DeptEmployee latestDeptEmployee = findLatestDeptEmployee(employee.getEmpNo());
-        System.out.println("old: " + latestDeptEmployee);
+        EntityManager helperEm = JPAUtil.getEntityManager();
+        System.out.println("3");
+        helperEm.getTransaction().begin();
+        try {
+        DeptEmployee latestDeptEmployee = findLatestDeptEmployee(helperEm, employee.getEmpNo());
 
         if (latestDeptEmployee != null) {
             latestDeptEmployee.setToDate(endDate);
+//            helperEm.merge(latestDeptEmployee);
         }
-        System.out.println("new: " + latestDeptEmployee);
 
-        try {
+//        try {
             DeptEmployee newDeptEmployeeObj = new DeptEmployee();
-            Department targetDept = em.find(Department.class, newDeptNo);
+            Department targetDept = helperEm.find(Department.class, newDeptNo);
 
             newDeptEmployeeObj.setDeptEmployeeId(new DeptEmployeeId(employee.getEmpNo(), newDeptNo));
             newDeptEmployeeObj.setDeptEmpDepartmentObj(targetDept);
@@ -156,89 +169,116 @@ public class EmployeeRepository {
             newDeptEmployeeObj.setFromDate(today);
             newDeptEmployeeObj.setToDate(LocalDate.of(9999, 1, 1));
 
-            System.out.println(newDeptEmployeeObj);
-            em.persist(newDeptEmployeeObj);
+            helperEm.persist(newDeptEmployeeObj);
+            helperEm.getTransaction().commit();
         } catch (Exception e) {
+            if (helperEm.getTransaction().isActive()) {
+                helperEm.getTransaction().rollback();
+            }
             String errorMessage = "Failed to save DeptEmployee record: " + e.getMessage();
 
             throw new RuntimeException(errorMessage, e);
+        } finally {
+            if (helperEm.isOpen()) {
+                helperEm.close();
+            }
         }
     }
 
     private void updateAndInsertNewSalary(Employee employee, BigDecimal newSalary, LocalDate today, LocalDate endDate) {
 
-        Salaries latestSalary = findLatestSalary(employee.getEmpNo());
-        System.out.println("old: " + latestSalary);
+        EntityManager helperEm = JPAUtil.getEntityManager();
+        System.out.println("2");
+        helperEm.getTransaction().begin();
+        try {
+        Salaries latestSalary = findLatestSalary(helperEm, employee.getEmpNo());
 
         if (latestSalary != null) {
             latestSalary.setToDate(endDate);
+            helperEm.merge(latestSalary);
         }
-        System.out.println("new: " + latestSalary);
 
-        try {
+//        try {
             Salaries newSalariesObj = new Salaries();
             newSalariesObj.setSalariesId(new SalariesId(employee.getEmpNo(), today));
             newSalariesObj.setEmployee(employee);
             newSalariesObj.setSalary(newSalary);
             newSalariesObj.setToDate(LocalDate.of(9999, 1, 1));
 
-            System.out.println(newSalariesObj);
-            em.persist(newSalariesObj);
+            helperEm.persist(newSalariesObj);
+            helperEm.getTransaction().commit();
         } catch (Exception e) {
+            if (helperEm.getTransaction().isActive()) {
+                helperEm.getTransaction().rollback();
+            }
             String errorMessage = "Failed to save Salary record: " + e.getMessage();
 
             throw new RuntimeException(errorMessage, e);
+        } finally {
+            if (helperEm.isOpen()) {
+                helperEm.close();
+            }
         }
     }
 
     private void updateAndInsertNewTitle(Employee employee, String newTitle, LocalDate today, LocalDate endDate) {
 
-        Titles latestTitle = findLatestTitle(employee.getEmpNo());
-        System.out.println("old: " + latestTitle);
+        EntityManager helperEm = JPAUtil.getEntityManager();
+        System.out.println("1");
+        helperEm.getTransaction().begin();
+        try {
+        Titles latestTitle = findLatestTitle(helperEm, employee.getEmpNo());
 
         if (latestTitle != null) {
             latestTitle.setToDate(endDate);
+            helperEm.merge(latestTitle);
         }
-        System.out.println("new: " + latestTitle);
 
-        try {
+//        try {
             Titles newTitlesObj = new Titles();
             newTitlesObj.setTitlesId(new TitlesId(employee.getEmpNo(), newTitle, today));
             newTitlesObj.setEmployee(employee);
             newTitlesObj.setToDate(LocalDate.of(9999, 1, 1));
 
-            System.out.println(newTitlesObj);
-            em.persist(newTitlesObj);
+            helperEm.persist(newTitlesObj);
+            helperEm.getTransaction().commit();
         } catch (Exception e) {
+            if (helperEm.getTransaction().isActive()) {
+                helperEm.getTransaction().rollback();
+            }
             String errorMessage = "Failed to save Title record: " + e.getMessage();
 
             throw new RuntimeException(errorMessage, e);
+        } finally {
+            if (helperEm.isOpen()) {
+                helperEm.close();
+            }
         }
     }
 
     // HELPER METHOD
-    public Titles findLatestTitle(Long empNo) {
+    public Titles findLatestTitle(EntityManager em, Long empNo) {
         return em.createNamedQuery("Titles.findLatestEmployeeTitle", Titles.class)
                 .setParameter("empNo", empNo)
                 .setMaxResults(1)
                 .getSingleResult();
     }
 
-    public Salaries findLatestSalary(Long empNo) {
+    public Salaries findLatestSalary(EntityManager em, Long empNo) {
         return em.createNamedQuery("Salaries.findLatestEmployeeSalary", Salaries.class)
                 .setParameter("empNo", empNo)
                 .setMaxResults(1)
                 .getSingleResult();
     }
 
-    private DeptEmployee findLatestDeptEmployee(Long empNo) {
+    private DeptEmployee findLatestDeptEmployee(EntityManager em, Long empNo) {
         return em.createNamedQuery("DeptEmployee.findLatestDeptEmployeeRecord", DeptEmployee.class)
                 .setParameter("empNo", empNo)
                 .setMaxResults(1)
                 .getSingleResult();
     }
 
-    private DeptManager findLatestDeptManager(String deptNo) {
+    private DeptManager findLatestDeptManager(EntityManager em, String deptNo) {
         return em.createNamedQuery("DeptManager.findLatestDeptManagerRecord", DeptManager.class)
                 .setParameter("deptNo", deptNo)
                 .setMaxResults(1)

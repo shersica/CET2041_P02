@@ -10,7 +10,7 @@ import java.util.List;
 @Table(name = "departments")
 @Getter
 @Setter
-@ToString
+@ToString(exclude = {"deptEmployees", "deptManagers"})
 @NoArgsConstructor
 @AllArgsConstructor
 @NamedQueries({
