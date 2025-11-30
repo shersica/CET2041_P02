@@ -37,6 +37,12 @@ public class EmployeeRepository {
 
     }
 
+    public Employee findEmpRecordById(EntityManager em, Long empNo) {
+//        em = JPAUtil.getEntityManager();
+        return em.find(Employee.class, empNo);
+
+    }
+
     // LOGIC FOR ENDPOINT 3
     @Transactional
     public List<EmployeeDTO> findEmpDTOByDeptNo(String deptNo, int pageNo) {
@@ -54,75 +60,78 @@ public class EmployeeRepository {
     // LOGIC FOR ENDPOINT 4
     public void promoteEmployee(List<PromotionRequestDTO> promotionRequestDTOS) {
 
-//        em = JPAUtil.getEntityManager();
+        // creation of EntityManager
+        em = JPAUtil.getEntityManager();
 
-//        em.getTransaction().begin();
+        // begin transaction
+        em.getTransaction().begin();
         try {
             for (PromotionRequestDTO promotionRequestDTO : promotionRequestDTOS) {
                 LocalDate today = LocalDate.now();
                 LocalDate endDate = today.minusDays(1);
 
-                Employee employee = findEmpRecordById(promotionRequestDTO.getEmpNo());
+                Employee employee = findEmpRecordById(em, promotionRequestDTO.getEmpNo());
                 String currentDeptNo = findLatestDeptEmployee(em, promotionRequestDTO.getEmpNo()).getDeptNo();
                 String targetDeptNo = promotionRequestDTO.getNewDeptNo() != null
                         ? promotionRequestDTO.getNewDeptNo()
                         : currentDeptNo;
 
                 // update titles table
-                updateAndInsertNewTitle(employee, promotionRequestDTO.getNewTitle(), today, endDate);
+                updateAndInsertNewTitle(em, employee, promotionRequestDTO.getNewTitle(), today, endDate);
                 System.out.println("success 1");
 
                 // update salaries table
                 if (promotionRequestDTO.getNewSalary() != null) {
-                    updateAndInsertNewSalary(employee, promotionRequestDTO.getNewSalary(), today, endDate);
+                    updateAndInsertNewSalary(em, employee, promotionRequestDTO.getNewSalary(), today, endDate);
                     System.out.println("success 2");
                 }
                 // update dept_emp table if moved to new dept
                 if (promotionRequestDTO.getNewDeptNo() != null) {
-                    updateAndInsertNewDeptEmp(employee, targetDeptNo, today, endDate);
+                    updateAndInsertNewDeptEmp(em, employee, targetDeptNo, today, endDate);
                     System.out.println("success 3");
                 }
 
                 // update dept_manager if promoted to manager
                 if (promotionRequestDTO.isManager()) {
-                    updateAndInsertNewDeptManager(employee, targetDeptNo, today, endDate);
+                    updateAndInsertNewDeptManager(em, employee, targetDeptNo, today, endDate);
                     System.out.println("success 4");
                 }
             }
 
             System.out.println("success 5");
-//            em.getTransaction().commit();
+            em.getTransaction().commit();
             System.out.println("success 6");
         } catch (Exception e) {
-//            if (em.getTransaction().isActive()) {
-//                em.getTransaction().rollback();
-//            }
+            if (em.getTransaction().isActive()) {
+                em.getTransaction().rollback();
+            }
 
             throw new RuntimeException(e.getMessage(), e);
         } finally {
-//            if (em.isOpen()) {
-//                em.close();
-//            }
+            if (em.isOpen()) {
+                em.close();
+            }
         }
     }
 
     // HELPER METHOD
-    private void updateAndInsertNewDeptManager(Employee employee, String deptNo, LocalDate today, LocalDate endDate) {
-
-        EntityManager helperEm = JPAUtil.getEntityManager();
-        System.out.println("4");
-        helperEm.getTransaction().begin();
+    private void updateAndInsertNewDeptManager(
+            EntityManager em,
+            Employee employee,
+            String deptNo,
+            LocalDate today,
+            LocalDate endDate)
+    {
         try {
-        DeptManager deptManager = findLatestDeptManager(helperEm, deptNo);
+            DeptManager deptManager = findLatestDeptManager(em, deptNo);
 
-        if (deptManager != null) {
-            deptManager.setToDate(endDate);
+            if (deptManager != null) {
+                deptManager.setToDate(endDate);
 //            helperEm.merge(deptManager);
-        }
+            }
 
-//        try {
             DeptManager newDeptManagerObj = new DeptManager();
-            Department targetDept = helperEm.find(Department.class, deptNo);
+            Department targetDept = em.find(Department.class, deptNo);
 
             newDeptManagerObj.setDeptManagerId(new DeptManagerId(employee.getEmpNo(), deptNo));
             newDeptManagerObj.setDeptManDepartmentObj(targetDept);
@@ -130,38 +139,33 @@ public class EmployeeRepository {
             newDeptManagerObj.setFromDate(today);
             newDeptManagerObj.setToDate(LocalDate.of(9999, 1, 1));
 
-            helperEm.persist(newDeptManagerObj);
-            helperEm.getTransaction().commit();
+            em.persist(newDeptManagerObj);
         } catch (Exception e) {
-            if (helperEm.getTransaction().isActive()) {
-                helperEm.getTransaction().rollback();
-            }
             String errorMessage = "Failed to save DeptManager record: " + e.getMessage();
 
             throw new RuntimeException(errorMessage, e);
-        } finally {
-            if (helperEm.isOpen()) {
-                helperEm.close();
-            }
         }
     }
 
-    private void updateAndInsertNewDeptEmp(Employee employee, String newDeptNo, LocalDate today, LocalDate endDate) {
-
-        EntityManager helperEm = JPAUtil.getEntityManager();
-        System.out.println("3");
-        helperEm.getTransaction().begin();
+    private void updateAndInsertNewDeptEmp(
+            EntityManager em,
+            Employee employee,
+            String newDeptNo,
+            LocalDate today,
+            LocalDate endDate)
+    {
+//        EntityManager helperEm = JPAUtil.getEntityManager();
+//        helperEm.getTransaction().begin();
         try {
-        DeptEmployee latestDeptEmployee = findLatestDeptEmployee(helperEm, employee.getEmpNo());
+            DeptEmployee latestDeptEmployee = findLatestDeptEmployee(em, employee.getEmpNo());
 
-        if (latestDeptEmployee != null) {
-            latestDeptEmployee.setToDate(endDate);
+            if (latestDeptEmployee != null) {
+                latestDeptEmployee.setToDate(endDate);
 //            helperEm.merge(latestDeptEmployee);
-        }
+            }
 
-//        try {
             DeptEmployee newDeptEmployeeObj = new DeptEmployee();
-            Department targetDept = helperEm.find(Department.class, newDeptNo);
+            Department targetDept = em.find(Department.class, newDeptNo);
 
             newDeptEmployeeObj.setDeptEmployeeId(new DeptEmployeeId(employee.getEmpNo(), newDeptNo));
             newDeptEmployeeObj.setDeptEmpDepartmentObj(targetDept);
@@ -169,90 +173,96 @@ public class EmployeeRepository {
             newDeptEmployeeObj.setFromDate(today);
             newDeptEmployeeObj.setToDate(LocalDate.of(9999, 1, 1));
 
-            helperEm.persist(newDeptEmployeeObj);
-            helperEm.getTransaction().commit();
+            em.persist(newDeptEmployeeObj);
+//            em.getTransaction().commit();
         } catch (Exception e) {
-            if (helperEm.getTransaction().isActive()) {
-                helperEm.getTransaction().rollback();
-            }
+//            if (em.getTransaction().isActive()) {
+//                em.getTransaction().rollback();
+//            }
             String errorMessage = "Failed to save DeptEmployee record: " + e.getMessage();
 
             throw new RuntimeException(errorMessage, e);
         } finally {
-            if (helperEm.isOpen()) {
-                helperEm.close();
-            }
+//            if (em.isOpen()) {
+//                em.close();
+//            }
         }
     }
 
-    private void updateAndInsertNewSalary(Employee employee, BigDecimal newSalary, LocalDate today, LocalDate endDate) {
-
-        EntityManager helperEm = JPAUtil.getEntityManager();
-        System.out.println("2");
-        helperEm.getTransaction().begin();
+    private void updateAndInsertNewSalary(
+            EntityManager em,
+            Employee employee,
+            BigDecimal newSalary,
+            LocalDate today,
+            LocalDate endDate)
+    {
+//        EntityManager helperEm = JPAUtil.getEntityManager();
+//        helperEm.getTransaction().begin();
         try {
-        Salaries latestSalary = findLatestSalary(helperEm, employee.getEmpNo());
+            Salaries latestSalary = findLatestSalary(em, employee.getEmpNo());
 
-        if (latestSalary != null) {
-            latestSalary.setToDate(endDate);
-            helperEm.merge(latestSalary);
-        }
+            if (latestSalary != null) {
+                latestSalary.setToDate(endDate);
+//                em.merge(latestSalary);
+            }
 
-//        try {
             Salaries newSalariesObj = new Salaries();
             newSalariesObj.setSalariesId(new SalariesId(employee.getEmpNo(), today));
             newSalariesObj.setEmployee(employee);
             newSalariesObj.setSalary(newSalary);
             newSalariesObj.setToDate(LocalDate.of(9999, 1, 1));
 
-            helperEm.persist(newSalariesObj);
-            helperEm.getTransaction().commit();
+            em.persist(newSalariesObj);
+//            em.getTransaction().commit();
         } catch (Exception e) {
-            if (helperEm.getTransaction().isActive()) {
-                helperEm.getTransaction().rollback();
-            }
+//            if (em.getTransaction().isActive()) {
+//                em.getTransaction().rollback();
+//            }
             String errorMessage = "Failed to save Salary record: " + e.getMessage();
 
             throw new RuntimeException(errorMessage, e);
         } finally {
-            if (helperEm.isOpen()) {
-                helperEm.close();
-            }
+//            if (em.isOpen()) {
+//                em.close();
+//            }
         }
     }
 
-    private void updateAndInsertNewTitle(Employee employee, String newTitle, LocalDate today, LocalDate endDate) {
-
-        EntityManager helperEm = JPAUtil.getEntityManager();
-        System.out.println("1");
-        helperEm.getTransaction().begin();
+    private void updateAndInsertNewTitle(
+            EntityManager em,
+            Employee employee,
+            String newTitle,
+            LocalDate today,
+            LocalDate endDate)
+    {
+//        EntityManager helperEm = JPAUtil.getEntityManager();
+//        helperEm.getTransaction().begin();
         try {
-        Titles latestTitle = findLatestTitle(helperEm, employee.getEmpNo());
+            Titles latestTitle = findLatestTitle(em, employee.getEmpNo());
 
-        if (latestTitle != null) {
-            latestTitle.setToDate(endDate);
-            helperEm.merge(latestTitle);
-        }
+            if (latestTitle != null) {
+                latestTitle.setToDate(endDate);
+//                em.merge(latestTitle);
+            }
 
-//        try {
             Titles newTitlesObj = new Titles();
             newTitlesObj.setTitlesId(new TitlesId(employee.getEmpNo(), newTitle, today));
             newTitlesObj.setEmployee(employee);
             newTitlesObj.setToDate(LocalDate.of(9999, 1, 1));
 
-            helperEm.persist(newTitlesObj);
-            helperEm.getTransaction().commit();
+            em.persist(newTitlesObj);
+//            em.getTransaction().commit();
         } catch (Exception e) {
-            if (helperEm.getTransaction().isActive()) {
-                helperEm.getTransaction().rollback();
-            }
+//            if (em.getTransaction().isActive()) {
+//                em.getTransaction().rollback();
+//            }
             String errorMessage = "Failed to save Title record: " + e.getMessage();
 
             throw new RuntimeException(errorMessage, e);
         } finally {
-            if (helperEm.isOpen()) {
-                helperEm.close();
-            }
+//            if (em.isOpen()) {
+//                em.close();
+//            }
         }
     }
 

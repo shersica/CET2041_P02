@@ -49,9 +49,9 @@ public class DeptManager {
     private LocalDate toDate;
 
     // custom getter
-    @JsonProperty("empNo")
-    public Long getEmpNo() {
-        return this.deptManagerId.getEmpNo();
-    }
+//    @JsonProperty("empNo")
+//    public Long getEmpNo() {
+//        return this.deptManagerId.getEmpNo();
+//    }
 
 }
