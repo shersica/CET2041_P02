@@ -1,9 +1,11 @@
 package entities;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.fasterxml.jackson.annotation.JsonFormat;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonUnwrapped;
 import jakarta.persistence.*;
-import lombok.Getter;
-import lombok.Setter;
-import lombok.ToString;
+import lombok.*;
 
 import java.time.LocalDate;
 
@@ -11,18 +13,24 @@ import java.time.LocalDate;
 @Table(name = "titles")
 @Getter
 @Setter
-@ToString(exclude = "employee")
+@ToString
+@NoArgsConstructor
+@AllArgsConstructor
 public class Titles {
 
     @EmbeddedId
+    @JsonUnwrapped
     private TitlesId titlesId;
 
     @Column(name = "to_date")
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd")
     private LocalDate toDate;
 
     @ManyToOne
     @MapsId("empNo")
     @JoinColumn(name = "emp_no")
+//    @JsonIgnore
+    @JsonBackReference
     private Employee employee;
 
 }

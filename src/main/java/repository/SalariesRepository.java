@@ -1,0 +1,17 @@
+package repository;
+
+import entities.Salaries;
+import entities.SalariesId;
+import jakarta.persistence.EntityManager;
+
+public class SalariesRepository {
+
+    public void addSalary(EntityManager em, Salaries salaries) {
+        System.out.println("adding salaries");
+        em.persist(salaries);
+    }
+
+    public Salaries findById(EntityManager em, SalariesId id) {
+        return em.find(Salaries.class, id);
+    }
+}

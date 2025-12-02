@@ -1,33 +1,26 @@
 package repository;
 
-import entities.Department;
-import entities.DeptEmployee;
-import entities.Employee;
+import dtos.EmployeeDTO;
+import dtos.PromotionRequestDTO;
+import entities.*;
+import jakarta.persistence.Entity;
 import jakarta.persistence.EntityManager;
 
-import java.util.ArrayList;
+import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.util.List;
 
 public class EmployeeRepository {
-    protected EntityManager em;
 
-    public EmployeeRepository(EntityManager em) {
-        this.em = em;
-    }
-
-    public Employee findById(Long id) {
+    public Employee findById(EntityManager em, Long id) {
         return em.find(Employee.class, id);
     }
 
-    public List<Employee> findDeptEmployee(String deptNo) {
-        Department department = em.find(Department.class, deptNo);
-        List<Employee> employees = new ArrayList<>();
-
-        if (department != null) {
-            for (DeptEmployee deptEmployee : department.getDeptEmployees()) {
-                employees.add(deptEmployee.getDeptEmpEmployeeObj());
-            }
-        }
-        return employees;
+    public List<EmployeeDTO> findEmployeesByDept(EntityManager em, String deptNo, int page) {
+        return em.createNamedQuery("Employee.findEmployeeInDepartment", EmployeeDTO.class)
+                .setParameter("deptNo", deptNo)
+                .setFirstResult((page - 1) * 20)
+                .setMaxResults(20)
+                .getResultList();
     }
 }

@@ -7,15 +7,13 @@ import jakarta.persistence.TypedQuery;
 import java.util.List;
 
 public class DepartmentRepository {
-    protected EntityManager em;
 
-    public DepartmentRepository(EntityManager em) {
-        this.em = em;
+    public List<Department> findAllDepartments(EntityManager em) {
+        return em.createNamedQuery("Department.findAllDepartments", Department.class).getResultList();
     }
 
-    public List<Department> findAllDepartments() {
-        TypedQuery<Department> query = em.createQuery(
-                "SELECT e FROM Department e", Department.class);
-        return query.getResultList();
+    public Department findDepartmentById(EntityManager em, String deptNo) {
+        return em.find(Department.class, deptNo);
     }
+
 }

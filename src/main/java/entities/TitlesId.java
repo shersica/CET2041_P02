@@ -1,5 +1,7 @@
 package entities;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.Column;
 import jakarta.persistence.Embeddable;
 import lombok.AllArgsConstructor;
@@ -16,12 +18,14 @@ import java.time.LocalDate;
 public class TitlesId implements Serializable {
 
     @Column(name = "emp_no")
+    @JsonIgnore
     private Long empNo;
 
     @Column(name = "title")
     private String title;
 
     @Column(name = "from_date")
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd")
     private LocalDate fromDate;
 
 }
