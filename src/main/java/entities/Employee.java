@@ -18,7 +18,7 @@ import java.util.List;
 @NamedQueries({
         @NamedQuery(name = "Employee.findEmployeeInDepartment",
                 query = """
-                            SELECT NEW dtos.EmployeeDTO(e.empNo, e.firstName, e.lastName, e.hireDate)
+                            SELECT DISTINCT NEW dtos.EmployeeDTO(e.empNo, e.firstName, e.lastName, e.hireDate)
                             FROM DeptEmployee de
                             JOIN de.deptEmpEmployeeObj e
                             WHERE de.deptEmpDepartmentObj.deptNo = :deptNo

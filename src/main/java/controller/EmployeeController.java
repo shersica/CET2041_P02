@@ -7,7 +7,6 @@ import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 import service.EmployeeService;
-import util.JPAUtil;
 import java.util.List;
 
 @Path("/employees")
@@ -46,7 +45,11 @@ public class EmployeeController {
                         .build();
             }
             return Response.ok().entity(employees).build();
-        } catch (RuntimeException e) {
+        } catch (BadRequestException e) {
+            return Response.status(Response.Status.BAD_REQUEST)
+                    .entity("{\"error\": \"" + e.getMessage() + "\"}")
+                    .build();
+        } catch (Exception e) {
             return Response.status(Response.Status.INTERNAL_SERVER_ERROR)
                     .entity("{\"error\": \"" + e.getMessage() + "\"}")
                     .build();

@@ -11,6 +11,8 @@ import util.JPAUtil;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public class EmployeeService {
     private final EmployeeRepository employeeRepository = new EmployeeRepository();
@@ -34,9 +36,11 @@ public class EmployeeService {
             page = 1;
         }
         try (EntityManager em = JPAUtil.getEntityManager()) {
+            Department dept = departmentRepository.findDepartmentById(em, deptNo);
+            if (dept == null) {
+                throw new BadRequestException("Invalid deptNo. Department not found");
+            }
             return employeeRepository.findEmployeesByDept(em, deptNo, page);
-        } catch (Exception e) {
-            throw new RuntimeException("Error fetching employees by dept: " + e.getMessage());
         }
     }
 
@@ -59,6 +63,11 @@ public class EmployeeService {
         }
         if (newDeptNo == null || newDeptNo.isEmpty()) {
             throw new BadRequestException("DeptNo cannot be null");
+        }
+        if(isValidTitle(newTitle)) {
+            newTitle = toTitleCase(newTitle);
+        } else {
+            throw new BadRequestException("Invalid title");
         }
 
         EntityManager em = JPAUtil.getEntityManager();
@@ -204,4 +213,13 @@ public class EmployeeService {
         }
     }
 
+    public boolean isValidTitle(String title){
+        Pattern pattern = Pattern.compile("^[A-Za-z ]+$");
+        Matcher matcher = pattern.matcher(title);
+        return matcher.find();
+    }
+
+    public String toTitleCase(String title){
+        return title.substring(0, 1).toUpperCase() + title.substring(1);
+    }
 }
