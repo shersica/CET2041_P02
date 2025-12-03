@@ -9,7 +9,21 @@ import java.time.LocalDate;
 import java.util.List;
 
 /**
- * Employee entity with DB table name as employees
+ * Represents an employee record in the {@code Employees} table.
+ *
+ *  <p>This entity stores the basic personal information of an employee and
+ *  serves as the root entity for several one-to-many relationships such as
+ *  titles, salaries, and department assignments.</p>
+ *
+ *  <p>Primary Key: {@code empNo}</p>
+ *
+ *  <p><b>Relationships:</b></p>
+ *  <ul>
+ *    <li>{@link DeptEmployee} – historical department assignments</li>
+ *    <li>{@link DeptManager} - historical manager assignments</li>
+ *    <li>{@link Salaries} – salary history</li>
+ *    <li>{@link Titles} – title history</li>
+ *  </ul>
  */
 @Entity
 @Table(name = "employees")
@@ -29,69 +43,70 @@ import java.util.List;
 
 })
 public class Employee {
+
     /**
-     * Employee number (Primary key)
+     * Unique employee identifier (Primary key)
      */
     @Id
     @Column(name = "emp_no",  nullable = false)
     private Long empNo;
 
     /**
-     * Birth date of employee
+     * Employee date of birth
      */
     @Column(name = "birth_date")
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd")
     private LocalDate birthDate;
 
     /**
-     * First name of the employee
+     * Employee first name
      */
     @Column(name = "first_name")
     private String firstName;
 
     /**
-     * Last name of the employee
+     * Employee last name
      */
     @Column(name = "last_name")
     private String lastName;
 
     /**
-     * Gender of the employee
+     * Employee gender (M/F)
      */
     @Column(name = "gender")
     @Enumerated(EnumType.STRING)
     private Gender gender;
 
     /**
-     * Hire date of the employee
+     * Employee hired date
      */
     @Column(name = "hire_date")
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd")
     private LocalDate hireDate;
 
     /**
-     * Departments the employee have been part of
+     * Employee historical department assignment
      */
     @OneToMany(mappedBy = "deptEmpEmployeeObj", fetch = FetchType.EAGER)
     @JsonManagedReference
     private List<DeptEmployee> deptEmployees;
 
     /**
-     * Departments where the employee is a manager
+     * Employee historical manager assignment
      */
     @OneToMany(mappedBy = "deptManEmployeeObj", fetch = FetchType.EAGER)
     @JsonManagedReference
     private List<DeptManager> deptManagers;
 
     /**
-     * Salaries of the employee
+     * Employee salary history
      */
     @OneToMany(mappedBy = "employee", fetch = FetchType.EAGER)
     @JsonManagedReference
     private List<Salaries> salaries;
 
     /**
-     * Titles of the employee
+     * Employee title history
      */
     @OneToMany(mappedBy = "employee", fetch = FetchType.EAGER)
     @JsonManagedReference

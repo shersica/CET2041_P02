@@ -9,10 +9,22 @@ import jakarta.ws.rs.core.Response;
 import service.EmployeeService;
 import java.util.List;
 
+/**
+ * REST controller exposing endpoints for {@code Employee}-related operations
+ */
 @Path("/employees")
 public class EmployeeController {
+
+    /**
+     * Service responsible for handling {@code Employee}-related business logic
+     */
     private final EmployeeService employeeService = new EmployeeService();
 
+    /**
+     * Display the full record of an employee and return appropriate response code
+     * @param id employee unique identifier, i.e. employee number
+     * @return full employee record and response code
+     */
     @GET
     @Path("/employee/{id}")
     @Produces(MediaType.APPLICATION_JSON)
@@ -27,12 +39,19 @@ public class EmployeeController {
             return Response.ok().entity(employee).build();
 
         } catch (RuntimeException e) {
-            return Response.status(Response.Status.INTERNAL_SERVER_ERROR)
+            return Response.status(Response.Status.BAD_REQUEST)
                     .entity("{\"error\": \"" + e.getMessage() + "\"}")
                     .build();
         }
     }
 
+    /**
+     * Display a list of employee records from the specified department number.
+     * <p>Page number is optional. Default to page 1.</p>
+     * @param deptNo unique department identifier, i.e. department number
+     * @param page page number to be displayed
+     * @return list of employee records and response code
+     */
     @GET
     @Path(("/searchByDept"))
     @Produces(MediaType.APPLICATION_JSON)
@@ -56,6 +75,12 @@ public class EmployeeController {
         }
     }
 
+    /**
+     * Promotes an employee and returns an appropriate response code.
+     *
+     * @param promotionRequestDTO request payload describing promotion details
+     * @return HTTP 200 if promotion succeeds
+     */
     /* JSON PromotionRequestDTO Example
        (NOTE: For isManager field, put true if you want to promote employee to manager, else put false)
         {

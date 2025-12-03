@@ -12,15 +12,65 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
 
+/**
+ * Service responsible for handling employee-related operations, e.g.
+ * finding by ID, by department and promoting employee.
+ */
 public class EmployeeService {
+
+    /**
+     * Repository responsible for accessing and modifying {@link Employee} data.
+     * <p>
+     * This instance is used by the service to perform employee-related database
+     * operations such as retrieval, updates, and existence checks.
+     */
     private final EmployeeRepository employeeRepository = new EmployeeRepository();
+
+    /**
+     * Repository responsible for accessing and modifying {@link Titles} data.
+     * <p>
+     * This instance is used by the service to perform employee-related database
+     * operations such as retrieval, updates, and existence checks.
+     */
     private final TitlesRepository titlesRepository = new TitlesRepository();
+
+    /**
+     * Repository responsible for accessing and modifying {@link Salaries} data.
+     * <p>
+     * This instance is used by the service to perform employee-related database
+     * operations such as retrieval, updates, and existence checks.
+     */
     private final SalariesRepository salariesRepository = new SalariesRepository();
+
+    /**
+     * Repository responsible for accessing and modifying {@link DeptManager} data.
+     * <p>
+     * This instance is used by the service to perform employee-related database
+     * operations such as retrieval, updates, and existence checks.
+     */
     private final DeptManagerRepository deptManagerRepository = new DeptManagerRepository();
+
+    /**
+     * Repository responsible for accessing and modifying {@link Department} data.
+     * <p>
+     * This instance is used by the service to perform employee-related database
+     * operations such as retrieval, updates, and existence checks.
+     */
     private final DepartmentRepository departmentRepository = new DepartmentRepository();
+
+    /**
+     * Repository responsible for accessing and modifying {@link DeptEmployee} data.
+     * <p>
+     * This instance is used by the service to perform employee-related database
+     * operations such as retrieval, updates, and existence checks.
+     */
     private final DeptEmployeeRepository deptEmployeeRepository = new DeptEmployeeRepository();
 
-
+    /**
+     * Find and return Employee by its unique identifier, i.e. employee number
+     * @param id employee unique identifier, i.e. employee number
+     * @return the Employee if found, otherwise null
+     */
     public Employee findById(long id) {
         try (EntityManager em = JPAUtil.getEntityManager()) {
             return employeeRepository.findById(em, id);
@@ -29,6 +79,13 @@ public class EmployeeService {
         }
     }
 
+    /**
+     * Find and return a list of Employee DTO by unique department identifier
+     * and page number.
+     * @param deptNo department unique identifier, i.e. employee number
+     * @param page page number to be displayed
+     * @return the list of Employee DTO according to the page number
+     */
     public List<EmployeeDTO> findEmployeesByDept(String deptNo, int page) {
         if(page < 1){
             page = 1;
@@ -42,6 +99,12 @@ public class EmployeeService {
         }
     }
 
+    /**
+     * Promotes an employee based on the given request and applies
+     * changes atomically. If any validation or persistence step fails,
+     * the entire transaction is rolled back.
+     * @param promotionRequestDTO request data containing the desired promotion attributes
+     */
     public void promoteEmployee(PromotionRequestDTO promotionRequestDTO) {
         if (promotionRequestDTO == null) {
             throw new BadRequestException("Promotion request body is null");
@@ -245,6 +308,11 @@ public class EmployeeService {
     }
 
 
+    /**
+     * Convert a string to title-case, i.e. This Title
+     * @param title the title to be converted
+     * @return title in title-case
+     */
     public String toTitleCase(String title){
         if(title == null || title.isEmpty()){
             return null;
