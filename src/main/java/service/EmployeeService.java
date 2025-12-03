@@ -70,7 +70,7 @@ public class EmployeeService {
         if(isValidTitle(newTitle)) {
             newTitle = toTitleCase(newTitle);
         } else {
-            throw new BadRequestException("Invalid title");
+            throw new BadRequestException("Invalid title: Title can only contain alphabets (No digits)");
         }
 
         EntityManager em = JPAUtil.getEntityManager();
@@ -92,7 +92,7 @@ public class EmployeeService {
 
             // ---------- TITLES ----------
             List<Titles> titles = employee.getTitles();
-            //get currActiveTitle
+            //get curr active title
             Titles currTitle = null;
             for(Titles title : titles){
                 if(endDate.equals(title.getToDate())){
@@ -105,7 +105,7 @@ public class EmployeeService {
                 //update current active title date
                 if (currTitle != null) {
                     currTitle.setToDate(fromDate);
-                    em.flush();
+//                    em.flush();
                 }
 
                 // Insert new title only if the composite PK doesn't already exist
@@ -114,7 +114,7 @@ public class EmployeeService {
                 if (existingTitles == null) {
                     Titles newTitles = new Titles(newTitlesId, endDate, employee);
                     titlesRepository.addTitle(em, newTitles);
-                    em.flush();
+//                    em.flush();
                 } else {
                     System.out.println("A title row with the same composite PK already exists. Skipping insert.");
                 }
@@ -130,17 +130,18 @@ public class EmployeeService {
                 }
             }
 
-            if (currSalary == null) {
-                throw new BadRequestException("Current active salary not found");
+            boolean salaryChanged = true;
+            if (currSalary != null) {
+                salaryChanged = !currSalary.getSalary().equals(newSalary);
             }
-
-            boolean salaryChanged = !currSalary.getSalary().equals(newSalary);
 
             //Only update salary history if value actually changed
             if (salaryChanged) {
-                // close old active salary record
-                currSalary.setToDate(fromDate);
-                em.flush();
+                // close old active salary record if there is an active record
+                if(currSalary != null) {
+                    currSalary.setToDate(fromDate);
+                }
+//                em.flush();
 
                 // ensure this specific update hasn't already happened today
                 SalariesId newSalaryId = new SalariesId(empNo, fromDate);
@@ -152,29 +153,12 @@ public class EmployeeService {
                 // insert new salary row
                 Salaries newSalaryEntity = new Salaries(newSalary, newSalaryId, endDate, employee);
                 salariesRepository.addSalary(em, newSalaryEntity);
-                em.flush();
-            }
-//            for (Salaries oldSalary : salaries) {
-//                if (endDate.equals(oldSalary.getToDate()) && oldSalary.getSalary().compareTo(newSalary) != 0) {
-//                    oldSalary.setToDate(fromDate);
-////                    em.merge(oldSalary);
-//                    em.flush();
-//                }
-//            }
-
-//            SalariesId newSalaryId = new SalariesId(empNo, fromDate);
-//            Salaries existingSalary = salariesRepository.findById(em, newSalaryId);
-//            if(existingSalary != null){
-//                throw new BadRequestException("Salary already updated today");
-//            } else {
-//                Salaries newSalaryEntity = new Salaries(newSalary, newSalaryId, endDate, employee);
-//                salariesRepository.addSalary(em, newSalaryEntity);
 //                em.flush();
-//            }
+            }
 
             // ---------- DEPT MANAGER ----------
+            List<DeptManager> deptManagers = employee.getDeptManagers();
             if (isManager) {
-                List<DeptManager> deptManagers = employee.getDeptManagers();
                 boolean alreadyManagerInTargetDept = false;
                 for (DeptManager dm : deptManagers) {
                     if (endDate.equals(dm.getToDate())) {
@@ -183,7 +167,7 @@ public class EmployeeService {
                             // close the old manager appointment
                             dm.setToDate(fromDate);
 //                            em.merge(dm);
-                            em.flush();
+//                            em.flush();
                         } else {
                             // already active manager in that dept
                             alreadyManagerInTargetDept = true;
@@ -198,35 +182,52 @@ public class EmployeeService {
                     if (existingDm == null) {
                         DeptManager newDm = new DeptManager(newDmId, dept, employee, fromDate, endDate);
                         deptManagerRepository.addDeptManager(em, newDm);
-                        em.flush();
+//                        em.flush();
+                    }
+                }
+            } else {
+                // Demotion: close all active manager records
+                for (DeptManager dm : deptManagers) {
+                    if (endDate.equals(dm.getToDate())) {
+                        dm.setToDate(fromDate);
+//                        em.flush();
                     }
                 }
             }
-
             // ---------- DEPT EMPLOYEE ----------
             List<DeptEmployee> deptEmployees = employee.getDeptEmployees();
-            boolean alreadyInTargetDept = false;
+            DeptEmployee currDept = null;
+            boolean isPreviousDept = false;
+
+            // Find current active department and check if newDept is a previous closed dept
             for (DeptEmployee de : deptEmployees) {
-                if (endDate.equals(de.getToDate())) {
-                    String currentDeptNo = de.getDeptEmpDepartmentObj().getDeptNo();
-                    if (!currentDeptNo.equals(newDeptNo)) {
-                        de.setToDate(fromDate);
-//                        em.merge(de);
-                        em.flush();
-                    } else {
-                        alreadyInTargetDept = true;
-                    }
+                if (de.getToDate().equals(endDate)) {
+                    currDept = de;
+                } else if (de.getDeptEmpDepartmentObj().getDeptNo().equalsIgnoreCase(newDeptNo)) {
+                    isPreviousDept = true;
                 }
             }
 
-            if (!alreadyInTargetDept) {
-                DeptEmployeeId newDeId = new DeptEmployeeId(empNo, newDeptNo);
-                DeptEmployee existingDe = deptEmployeeRepository.findById(em, newDeId);
-                if (existingDe == null) {
-                    DeptEmployee newDe = new DeptEmployee(newDeId, employee, dept, fromDate, endDate);
-                    deptEmployeeRepository.addDeptEmployee(em, newDe);
-                    em.flush();
+            // Cannot move to a previous department
+            if (isPreviousDept) {
+                throw new BadRequestException("Cannot reassign employee to a previous department: " + newDeptNo);
+            }
+
+            // If current active dept is same as newDept, do nothing
+            if (currDept != null && currDept.getDeptEmpDepartmentObj().getDeptNo().equalsIgnoreCase(newDeptNo)) {
+                // already in target dept, nothing to update
+            } else {
+                // Close current active department if it exists
+                if (currDept != null) {
+                    currDept.setToDate(fromDate);
+//                    em.flush();
                 }
+
+                // Insert new DeptEmployee record
+                DeptEmployeeId newDeId = new DeptEmployeeId(empNo, newDeptNo);
+                DeptEmployee newDe = new DeptEmployee(newDeId, employee, dept, fromDate, endDate);
+                deptEmployeeRepository.addDeptEmployee(em, newDe);
+//                em.flush();
             }
 
             em.getTransaction().commit();

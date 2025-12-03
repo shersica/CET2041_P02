@@ -57,6 +57,7 @@ public class EmployeeController {
     }
 
     /* JSON PromotionRequestDTO Example
+       (NOTE: For isManager field, put true if you want to promote employee to manager, else put false)
         {
             "empNo": 10001,
             "newTitle": "Staff Engineer",
