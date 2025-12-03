@@ -167,7 +167,6 @@ public class EmployeeService {
                 //update current active title date
                 if (currTitle != null) {
                     currTitle.setToDate(fromDate);
-//                    em.flush();
                 }
 
                 // Insert new title only if the composite PK doesn't already exist
@@ -176,7 +175,6 @@ public class EmployeeService {
                 if (existingTitles == null) {
                     Titles newTitles = new Titles(newTitlesId, endDate, employee);
                     titlesRepository.addTitle(em, newTitles);
-//                    em.flush();
                 } else {
                     System.out.println("A title row with the same composite PK already exists. Skipping insert.");
                 }
@@ -203,7 +201,6 @@ public class EmployeeService {
                 if(currSalary != null) {
                     currSalary.setToDate(fromDate);
                 }
-//                em.flush();
 
                 // ensure this specific update hasn't already happened today
                 SalariesId newSalaryId = new SalariesId(empNo, fromDate);
@@ -215,7 +212,6 @@ public class EmployeeService {
                 // insert new salary row
                 Salaries newSalaryEntity = new Salaries(newSalary, newSalaryId, endDate, employee);
                 salariesRepository.addSalary(em, newSalaryEntity);
-//                em.flush();
             }
 
             // ---------- DEPT MANAGER ----------
@@ -228,8 +224,6 @@ public class EmployeeService {
                         if (!currentDeptNo.equals(newDeptNo)) {
                             // close the old manager appointment
                             dm.setToDate(fromDate);
-//                            em.merge(dm);
-//                            em.flush();
                         } else {
                             // already active manager in that dept
                             alreadyManagerInTargetDept = true;
@@ -244,7 +238,6 @@ public class EmployeeService {
                     if (existingDm == null) {
                         DeptManager newDm = new DeptManager(newDmId, dept, employee, fromDate, endDate);
                         deptManagerRepository.addDeptManager(em, newDm);
-//                        em.flush();
                     }
                 }
             } else {
@@ -252,7 +245,6 @@ public class EmployeeService {
                 for (DeptManager dm : deptManagers) {
                     if (endDate.equals(dm.getToDate())) {
                         dm.setToDate(fromDate);
-//                        em.flush();
                     }
                 }
             }
@@ -282,14 +274,12 @@ public class EmployeeService {
                 // Close current active department if it exists
                 if (currDept != null) {
                     currDept.setToDate(fromDate);
-//                    em.flush();
                 }
 
                 // Insert new DeptEmployee record
                 DeptEmployeeId newDeId = new DeptEmployeeId(empNo, newDeptNo);
                 DeptEmployee newDe = new DeptEmployee(newDeId, employee, dept, fromDate, endDate);
                 deptEmployeeRepository.addDeptEmployee(em, newDe);
-//                em.flush();
             }
 
             em.getTransaction().commit();
