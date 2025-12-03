@@ -5,14 +5,8 @@ import entities.DeptEmployeeId;
 import jakarta.persistence.EntityManager;
 
 public class DeptEmployeeRepository {
-//    protected EntityManager em;
-//
-//    public DeptEmployeeRepository(EntityManager em) {
-//        this.em = em;
-//    }
 
     public void addDeptEmployee(EntityManager em, DeptEmployee deptEmployee) {
-        System.out.println("add deptEmployee");
         em.persist(deptEmployee);
     }
 

@@ -8,7 +8,6 @@ import jakarta.persistence.EntityManager;
 public class DeptManagerRepository {
 
     public void addDeptManager(EntityManager em, DeptManager deptManager) {
-        System.out.println("add deptManager");
         em.persist(deptManager);
     }
 

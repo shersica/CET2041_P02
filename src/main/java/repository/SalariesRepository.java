@@ -7,7 +7,6 @@ import jakarta.persistence.EntityManager;
 public class SalariesRepository {
 
     public void addSalary(EntityManager em, Salaries salaries) {
-        System.out.println("adding salaries");
         em.persist(salaries);
     }
 

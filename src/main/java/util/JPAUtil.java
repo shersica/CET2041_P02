@@ -6,22 +6,25 @@ import jakarta.persistence.Persistence;
 
 
 public class JPAUtil {
-    private static EntityManagerFactory emf = null;
+    private static EntityManagerFactory emf;
 
-    static {
-        try {
-            System.out.println("Initializing EntityManagerFactory...");
-            emf = Persistence.createEntityManagerFactory("EmployeePU");
-            System.out.println("EntityManagerFactory initialized!");
-        } catch (Exception e) {
-            System.out.println("EntityManagerFactory initialization failed!");
-            e.printStackTrace();
-            throw new ExceptionInInitializerError(e);
+    private JPAUtil() {}
+
+    public static synchronized EntityManagerFactory getEntityManagerFactory() {
+        if (emf == null) {
+            try {
+                emf = Persistence.createEntityManagerFactory("EmployeePU");
+            } catch (Exception e) {
+                System.out.println("EntityManagerFactory initialization failed!");
+                throw new ExceptionInInitializerError(e);
+            }
         }
+        return emf;
     }
 
     public static EntityManager getEntityManager() {
-        return emf.createEntityManager();
+        EntityManagerFactory factory = getEntityManagerFactory();
+        return factory.createEntityManager();
     }
 
     public static void shutdown() {

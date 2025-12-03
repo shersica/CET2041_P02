@@ -11,8 +11,6 @@ import util.JPAUtil;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 public class EmployeeService {
     private final EmployeeRepository employeeRepository = new EmployeeRepository();
@@ -50,7 +48,7 @@ public class EmployeeService {
         }
 
         Long empNo = promotionRequestDTO.getEmpNo();
-        String newTitle = promotionRequestDTO.getNewTitle();
+        String newTitle = toTitleCase(promotionRequestDTO.getNewTitle());
         BigDecimal newSalary = promotionRequestDTO.getNewSalary();
         String newDeptNo = promotionRequestDTO.getNewDeptNo();
         boolean isManager = promotionRequestDTO.isManager();
@@ -61,16 +59,14 @@ public class EmployeeService {
         if (newSalary == null || newSalary.compareTo(BigDecimal.ZERO) <= 0) {
             throw new BadRequestException("Salary cannot be null or negative");
         }
+        if (newSalary.compareTo(BigDecimal.valueOf(Integer.MAX_VALUE)) > 0) {
+            throw new BadRequestException("Salary is too large");
+        }
         if (newDeptNo == null || newDeptNo.isEmpty()) {
             throw new BadRequestException("DeptNo cannot be null");
         }
         if(newDeptNo.length() != 4){
             throw new BadRequestException("Invalid DeptNo: Must be char length of 4");
-        }
-        if(isValidTitle(newTitle)) {
-            newTitle = toTitleCase(newTitle);
-        } else {
-            throw new BadRequestException("Invalid title: Title can only contain alphabets (No digits)");
         }
 
         EntityManager em = JPAUtil.getEntityManager();
@@ -248,13 +244,11 @@ public class EmployeeService {
         }
     }
 
-    public boolean isValidTitle(String title){
-        Pattern pattern = Pattern.compile("^[A-Za-z ]+$");
-        Matcher matcher = pattern.matcher(title);
-        return matcher.find();
-    }
 
     public String toTitleCase(String title){
+        if(title == null || title.isEmpty()){
+            return null;
+        }
         return title.substring(0, 1).toUpperCase() + title.substring(1);
     }
 }

@@ -5,19 +5,11 @@
              version="3.0">
     <persistence-unit name="EmployeePU" transaction-type="RESOURCE_LOCAL">
         <description>
-            This unit does CRUD operations to a database. It does not rely
-            on any vendor-specific features and can therefore be deployed
-            to any persistence provider.
+            Practicum 2 - Bryan and Sherylyn
         </description>
 
         <provider>org.hibernate.jpa.HibernatePersistenceProvider</provider>
 
-        <!--
-        the class tag is not required for this case as the managed Entity class
-        is located at the root folder.
-
-        <class>jpa_demo_01.Employee</class>
-        -->
         <class>entities.Employee</class>
         <class>entities.Department</class>
         <class>entities.Salaries</class>
