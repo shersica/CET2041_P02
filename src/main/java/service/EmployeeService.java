@@ -1,5 +1,8 @@
 package service;
 
+import customexceptions.ConflictException;
+import customexceptions.ContentTooLargeException;
+import customexceptions.NotFoundException;
 import dtos.EmployeeDTO;
 import dtos.PromotionRequestDTO;
 import entities.*;
@@ -75,7 +78,7 @@ public class EmployeeService {
         try (EntityManager em = JPAUtil.getEntityManager()) {
             return employeeRepository.findById(em, id);
         } catch (Exception e) {
-            throw new RuntimeException("Error fetching employee: " + e.getMessage());
+            throw new NotFoundException("Invalid employee number. Employee not found.");
         }
     }
 
@@ -93,7 +96,7 @@ public class EmployeeService {
         try (EntityManager em = JPAUtil.getEntityManager()) {
             Department dept = departmentRepository.findDepartmentById(em, deptNo);
             if (dept == null) {
-                throw new BadRequestException("Invalid deptNo. Department not found");
+                throw new NotFoundException("Invalid department number. Department not found.");
             }
             return employeeRepository.findEmployeesByDept(em, deptNo, page);
         }
@@ -123,13 +126,13 @@ public class EmployeeService {
             throw new BadRequestException("Salary cannot be null or negative");
         }
         if (newSalary.compareTo(BigDecimal.valueOf(Integer.MAX_VALUE)) > 0) {
-            throw new BadRequestException("Salary is too large");
+            throw new ContentTooLargeException("Salary is too large");
         }
         if (newDeptNo == null || newDeptNo.isEmpty()) {
-            throw new BadRequestException("DeptNo cannot be null");
+            throw new BadRequestException("Department number cannot be null");
         }
         if(newDeptNo.length() != 4){
-            throw new BadRequestException("Invalid DeptNo: Must be char length of 4");
+            throw new BadRequestException("Invalid department number: Must be char length of 4");
         }
 
         EntityManager em = JPAUtil.getEntityManager();
@@ -141,12 +144,12 @@ public class EmployeeService {
 
             Employee employee = employeeRepository.findById(em, empNo);
             if (employee == null) {
-                throw new BadRequestException("Invalid empNo. Employee not found");
+                throw new NotFoundException("Invalid employee number. Employee not found");
             }
 
             Department dept = departmentRepository.findDepartmentById(em, newDeptNo);
             if (dept == null) {
-                throw new BadRequestException("Invalid deptNo. Department not found");
+                throw new NotFoundException("Invalid department number. Department not found");
             }
 
             // ---------- TITLES ----------
@@ -206,7 +209,7 @@ public class EmployeeService {
                 SalariesId newSalaryId = new SalariesId(empNo, fromDate);
                 Salaries existingSalary = salariesRepository.findById(em, newSalaryId);
                 if (existingSalary != null) {
-                    throw new BadRequestException("Salary already updated today");
+                    throw new ConflictException("Salary already updated today.");
                 }
 
                 // insert new salary row
@@ -269,7 +272,7 @@ public class EmployeeService {
 
             // Cannot move to a previous department
             if (isPreviousDept) {
-                throw new BadRequestException("Cannot reassign employee to a previous department: " + newDeptNo);
+                throw new ConflictException("Cannot reassign employee to a previous department: " + newDeptNo);
             }
 
             // If current active dept is same as newDept, do nothing
@@ -290,11 +293,11 @@ public class EmployeeService {
             }
 
             em.getTransaction().commit();
-        } catch (BadRequestException bre) {
+        } catch (BadRequestException | ConflictException | ContentTooLargeException | NotFoundException e) {
             if (em.getTransaction().isActive()) {
                 em.getTransaction().rollback();
             }
-            throw bre;
+            throw e;
         } catch (Exception e) {
             if (em.getTransaction().isActive()) {
                 em.getTransaction().rollback();

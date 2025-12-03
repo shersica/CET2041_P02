@@ -1,5 +1,8 @@
 package controller;
 
+import customexceptions.ConflictException;
+import customexceptions.ContentTooLargeException;
+import customexceptions.NotFoundException;
 import dtos.EmployeeDTO;
 import dtos.PromotionRequestDTO;
 import entities.Employee;
@@ -33,13 +36,12 @@ public class EmployeeController {
             Employee employee = employeeService.findById(id);
             if (employee == null) {
                 return Response.status(Response.Status.NOT_FOUND)
-                        .entity("{\"error\": \"Employee not found\"}")
+                        .entity("{\"error\": \"Invalid employee number. Employee not found.\"}")
                         .build();
             }
             return Response.ok().entity(employee).build();
-
-        } catch (RuntimeException e) {
-            return Response.status(Response.Status.BAD_REQUEST)
+        } catch (NotFoundException e) {
+            return Response.status(Response.Status.NOT_FOUND)
                     .entity("{\"error\": \"" + e.getMessage() + "\"}")
                     .build();
         }
@@ -64,6 +66,18 @@ public class EmployeeController {
                         .build();
             }
             return Response.ok().entity(employees).build();
+        } catch (NotFoundException e) {
+            return Response.status(Response.Status.NOT_FOUND)
+                    .entity("{\"error\": \"" + e.getMessage() + "\"}")
+                    .build();
+        } catch (ContentTooLargeException e) {
+            return Response.status(Response.Status.fromStatusCode(413))
+                    .entity("{\"error\": \"" + e.getMessage() + "\"}")
+                    .build();
+        } catch (ConflictException e) {
+            return Response.status(Response.Status.fromStatusCode(409))
+                    .entity("{\"error\": \"" + e.getMessage() + "\"}")
+                    .build();
         } catch (BadRequestException e) {
             return Response.status(Response.Status.BAD_REQUEST)
                     .entity("{\"error\": \"" + e.getMessage() + "\"}")
@@ -99,10 +113,26 @@ public class EmployeeController {
         try {
             employeeService.promoteEmployee(promotionRequestDTO);
             return Response.ok().entity("{\"success\": \"Employee promoted\"}").build();
+        } catch (NotFoundException e) {
+            return Response.status(Response.Status.NOT_FOUND)
+                    .entity("{\"error\": \"Failed to promote employee: " + e.getMessage() + "\"}")
+                    .build();
+        } catch (ContentTooLargeException e) {
+            return Response.status(Response.Status.fromStatusCode(413))
+                    .entity("{\"error\": \"Failed to promote employee: " + e.getMessage() + "\"}")
+                    .build();
+        } catch (ConflictException e) {
+            return Response.status(Response.Status.fromStatusCode(409))
+                    .entity("{\"error\": \"Failed to promote employee: " + e.getMessage() + "\"}")
+                    .build();
         } catch (BadRequestException e) {
-            return Response.status(Response.Status.BAD_REQUEST).entity("{\"error\":\"" + e.getMessage() + "\"}").build();
+            return Response.status(Response.Status.BAD_REQUEST)
+                    .entity("{\"error\": \"Failed to promote employee: " + e.getMessage() + "\"}")
+                    .build();
         } catch (Exception e) {
-            return Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity("{\"error\": \"" + e.getMessage() + "\"}").build();
+            return Response.status(Response.Status.INTERNAL_SERVER_ERROR)
+                    .entity("{\"error\": \"" + e.getMessage() + "\"}")
+                    .build();
         }
     }
 }
