@@ -76,9 +76,11 @@ public class EmployeeService {
      */
     public Employee findById(long id) {
         try (EntityManager em = JPAUtil.getEntityManager()) {
-            return employeeRepository.findById(em, id);
-        } catch (Exception e) {
-            throw new NotFoundException("Invalid employee number. Employee not found.");
+            Employee employee = employeeRepository.findById(em, id);
+            if (employee == null) {
+                throw new NotFoundException("Invalid employee number. Employee not found.");
+            }
+            return employee;
         }
     }
 
@@ -261,6 +263,10 @@ public class EmployeeService {
                     isPreviousDept = true;
                 }
             }
+            //employee not part of the company anymore
+            if (currDept == null) {
+                throw new ConflictException("Employee is not currently assigned to any department. Cannot process promotion.");
+            }
 
             // Cannot move to a previous department
             if (isPreviousDept) {
@@ -268,13 +274,11 @@ public class EmployeeService {
             }
 
             // If current active dept is same as newDept, do nothing
-            if (currDept != null && currDept.getDeptEmpDepartmentObj().getDeptNo().equalsIgnoreCase(newDeptNo)) {
+            if(currDept.getDeptEmpDepartmentObj().getDeptNo().equalsIgnoreCase(newDeptNo)) {
                 // already in target dept, nothing to update
             } else {
                 // Close current active department if it exists
-                if (currDept != null) {
-                    currDept.setToDate(fromDate);
-                }
+                currDept.setToDate(fromDate);
 
                 // Insert new DeptEmployee record
                 DeptEmployeeId newDeId = new DeptEmployeeId(empNo, newDeptNo);

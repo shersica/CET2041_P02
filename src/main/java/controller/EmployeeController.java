@@ -34,14 +34,15 @@ public class EmployeeController {
     public Response getEmployee(@PathParam("id") long id) {
         try {
             Employee employee = employeeService.findById(id);
-            if (employee == null) {
-                return Response.status(Response.Status.NOT_FOUND)
-                        .entity("{\"error\": \"Invalid employee number. Employee not found.\"}")
-                        .build();
-            }
             return Response.ok().entity(employee).build();
+
         } catch (NotFoundException e) {
             return Response.status(Response.Status.NOT_FOUND)
+                    .entity("{\"error\": \"" + e.getMessage() + "\"}")
+                    .build();
+
+        } catch (Exception e) {
+            return Response.status(Response.Status.INTERNAL_SERVER_ERROR)
                     .entity("{\"error\": \"" + e.getMessage() + "\"}")
                     .build();
         }
@@ -68,14 +69,6 @@ public class EmployeeController {
             return Response.ok().entity(employees).build();
         } catch (NotFoundException e) {
             return Response.status(Response.Status.NOT_FOUND)
-                    .entity("{\"error\": \"" + e.getMessage() + "\"}")
-                    .build();
-        } catch (ContentTooLargeException e) {
-            return Response.status(Response.Status.fromStatusCode(413))
-                    .entity("{\"error\": \"" + e.getMessage() + "\"}")
-                    .build();
-        } catch (ConflictException e) {
-            return Response.status(Response.Status.fromStatusCode(409))
                     .entity("{\"error\": \"" + e.getMessage() + "\"}")
                     .build();
         } catch (BadRequestException e) {
