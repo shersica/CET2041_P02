@@ -64,6 +64,9 @@ public class EmployeeService {
         if (newDeptNo == null || newDeptNo.isEmpty()) {
             throw new BadRequestException("DeptNo cannot be null");
         }
+        if(newDeptNo.length() != 4){
+            throw new BadRequestException("Invalid DeptNo: Must be char length of 4");
+        }
         if(isValidTitle(newTitle)) {
             newTitle = toTitleCase(newTitle);
         } else {
@@ -119,29 +122,60 @@ public class EmployeeService {
 
             // ---------- SALARIES ----------
             List<Salaries> salaries = employee.getSalaries();
-            for (Salaries oldSalary : salaries) {
-                if (endDate.equals(oldSalary.getToDate()) && oldSalary.getSalary().compareTo(newSalary) != 0) {
-                    oldSalary.setToDate(fromDate);
-//                    em.merge(oldSalary);
-                    em.flush();
+            Salaries currSalary = null;
+            for(Salaries oldSalary : salaries){
+                if(oldSalary.getToDate().equals(endDate)){
+                    currSalary = oldSalary;
+                    break;
                 }
             }
 
-            SalariesId newSalaryId = new SalariesId(empNo, fromDate);
-            Salaries existingSalary = salariesRepository.findById(em, newSalaryId);
-            if(existingSalary != null){
-                throw new BadRequestException("Salary already updated today");
-            } else {
+            if (currSalary == null) {
+                throw new BadRequestException("Current active salary not found");
+            }
+
+            boolean salaryChanged = !currSalary.getSalary().equals(newSalary);
+
+            //Only update salary history if value actually changed
+            if (salaryChanged) {
+                // close old active salary record
+                currSalary.setToDate(fromDate);
+                em.flush();
+
+                // ensure this specific update hasn't already happened today
+                SalariesId newSalaryId = new SalariesId(empNo, fromDate);
+                Salaries existingSalary = salariesRepository.findById(em, newSalaryId);
+                if (existingSalary != null) {
+                    throw new BadRequestException("Salary already updated today");
+                }
+
+                // insert new salary row
                 Salaries newSalaryEntity = new Salaries(newSalary, newSalaryId, endDate, employee);
                 salariesRepository.addSalary(em, newSalaryEntity);
                 em.flush();
             }
+//            for (Salaries oldSalary : salaries) {
+//                if (endDate.equals(oldSalary.getToDate()) && oldSalary.getSalary().compareTo(newSalary) != 0) {
+//                    oldSalary.setToDate(fromDate);
+////                    em.merge(oldSalary);
+//                    em.flush();
+//                }
+//            }
+
+//            SalariesId newSalaryId = new SalariesId(empNo, fromDate);
+//            Salaries existingSalary = salariesRepository.findById(em, newSalaryId);
+//            if(existingSalary != null){
+//                throw new BadRequestException("Salary already updated today");
+//            } else {
+//                Salaries newSalaryEntity = new Salaries(newSalary, newSalaryId, endDate, employee);
+//                salariesRepository.addSalary(em, newSalaryEntity);
+//                em.flush();
+//            }
 
             // ---------- DEPT MANAGER ----------
             if (isManager) {
                 List<DeptManager> deptManagers = employee.getDeptManagers();
                 boolean alreadyManagerInTargetDept = false;
-
                 for (DeptManager dm : deptManagers) {
                     if (endDate.equals(dm.getToDate())) {
                         String currentDeptNo = dm.getDeptManDepartmentObj().getDeptNo();

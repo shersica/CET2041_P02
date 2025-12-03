@@ -8,6 +8,9 @@ import lombok.*;
 import java.time.LocalDate;
 import java.util.List;
 
+/**
+ * Employee entity with DB table name as employees
+ */
 @Entity
 @Table(name = "employees")
 @Getter
@@ -26,44 +29,70 @@ import java.util.List;
 
 })
 public class Employee {
-
+    /**
+     * Employee number (Primary key)
+     */
     @Id
     @Column(name = "emp_no",  nullable = false)
     private Long empNo;
 
+    /**
+     * Birth date of employee
+     */
     @Column(name = "birth_date")
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd")
     private LocalDate birthDate;
 
+    /**
+     * First name of the employee
+     */
     @Column(name = "first_name")
     private String firstName;
 
+    /**
+     * Last name of the employee
+     */
     @Column(name = "last_name")
     private String lastName;
 
+    /**
+     * Gender of the employee
+     */
     @Column(name = "gender")
-    private String gender;
+    @Enumerated(EnumType.STRING)
+    private Gender gender;
 
+    /**
+     * Hire date of the employee
+     */
     @Column(name = "hire_date")
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd")
     private LocalDate hireDate;
 
-    // one-to-many relationship between employees and dept_emp table
+    /**
+     * Departments the employee have been part of
+     */
     @OneToMany(mappedBy = "deptEmpEmployeeObj", fetch = FetchType.EAGER)
     @JsonManagedReference
     private List<DeptEmployee> deptEmployees;
 
-    // one-to-many relationship between employees and dept_manager table
+    /**
+     * Departments where the employee is a manager
+     */
     @OneToMany(mappedBy = "deptManEmployeeObj", fetch = FetchType.EAGER)
     @JsonManagedReference
     private List<DeptManager> deptManagers;
 
-    // one-to-many relationship between employees and salaries table
+    /**
+     * Salaries of the employee
+     */
     @OneToMany(mappedBy = "employee", fetch = FetchType.EAGER)
     @JsonManagedReference
     private List<Salaries> salaries;
 
-    // one-to-many relationship between employees and titles table
+    /**
+     * Titles of the employee
+     */
     @OneToMany(mappedBy = "employee", fetch = FetchType.EAGER)
     @JsonManagedReference
     private List<Titles> titles;

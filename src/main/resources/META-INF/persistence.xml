@@ -3,7 +3,7 @@
              xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
              xsi:schemaLocation="https://jakarta.ee/xml/ns/persistence https://jakarta.ee/xml/ns/persistence/persistence_3_0.xsd"
              version="3.0">
-    <persistence-unit name="EmployeeRepository" transaction-type="RESOURCE_LOCAL">
+    <persistence-unit name="EmployeePU" transaction-type="RESOURCE_LOCAL">
         <description>
             This unit does CRUD operations to a database. It does not rely
             on any vendor-specific features and can therefore be deployed
@@ -29,7 +29,7 @@
             <property name="jakarta.persistence.jdbc.driver"
                       value="org.mariadb.jdbc.Driver"/>
             <property name="jakarta.persistence.jdbc.url"
-                      value="jdbc:mariadb://localhost:3306"/>
+                      value="jdbc:mariadb://localhost:3306/employees"/>
             <property name="jakarta.persistence.jdbc.user" value="root"/>
             <property name="jakarta.persistence.jdbc.password" value="root"/>
             <property name="hibernate.show_sql" value="true"/>

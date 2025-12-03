@@ -11,17 +11,18 @@ public class JPAUtil {
     private static EntityManagerFactory emf = null;
 
     static {
-        Map<String, String> persistenceMap = new HashMap<>();
+//        Map<String, String> persistenceMap = new HashMap<>();
 
         // CHANGE DATABASE NAME HERE --------------
-        String DBNAME = "employees";
-
-        persistenceMap.put("jakarta.persistence.jdbc.url",
-                "jdbc:mariadb://localhost:3306/" + DBNAME);
+//        String DBNAME = "employees";
+//
+//        persistenceMap.put("jakarta.persistence.jdbc.url",
+//                "jdbc:mariadb://localhost:3306/" + DBNAME);
 
         try {
             System.out.println("Initializing EntityManagerFactory...");
-            emf = Persistence.createEntityManagerFactory("EmployeeRepository", persistenceMap);
+//            emf = Persistence.createEntityManagerFactory("EmployeeRepository", persistenceMap);
+            emf = Persistence.createEntityManagerFactory("EmployeePU");
             System.out.println("EntityManagerFactory initialized!");
         } catch (Exception e) {
             System.out.println("EntityManagerFactory initialization failed!");
